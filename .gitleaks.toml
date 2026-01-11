@@ -1,0 +1,79 @@
+title = "Gitleaks Configuration"
+
+[extend]
+# useDefault will extend the base configuration with additional rules
+useDefault = true
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+tags = ["key", "AWS"]
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Access Key"
+regex = '''(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z\/+]{40}['\"]'''
+tags = ["secret", "AWS"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "github-oauth"
+description = "GitHub OAuth Token"
+regex = '''gho_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "github-app"
+description = "GitHub App Token"
+regex = '''(ghu|ghs)_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret)(.{0,20})?['"][0-9a-zA-Z]{32,45}['"]'''
+tags = ["key", "API"]
+
+[allowlist]
+description = "Allowlist for test files"
+paths = [
+  '''.*_test\.go''',
+  '''.*\.example''',
+]
+
+[[rules]]
+id = "gcp-api-key"
+description = "Google Cloud API Key"
+regex = '''AIza[0-9A-Za-z\-_]{35}'''
+tags = ["key", "GCP", "GKE"]
+
+[[rules]]
+id = "gcp-service-account-key"
+description = "GCP Service Account Private Key"
+regex = '''-----BEGIN PRIVATE KEY-----[\s\S]*?-----END PRIVATE KEY-----'''
+tags = ["secret", "GCP", "GKE"]
+
+[[rules]]
+id = "gcp-oauth-access-token"
+description = "GCP OAuth Access Token"
+regex = '''ya29\.[0-9A-Za-z\-_]+'''
+tags = ["token", "GCP"]
+
+[[rules]]
+id = "gcp-refresh-token"
+description = "GCP OAuth Refresh Token"
+regex = '''1//[0-9A-Za-z\-_]+'''
+tags = ["token", "GCP"]
+
+[[rules]]
+id = "kubernetes-secret-env"
+description = "Kubernetes Secret via env var"
+regex = '''(?i)(gcp|google|k8s|kube|gke)[_-]?(secret|token|key|password)\s*[:=]\s*['"][^'"]{20,}['"]'''
+tags = ["kubernetes", "GKE", "secret"]
+
