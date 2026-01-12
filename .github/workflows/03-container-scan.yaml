@@ -9,6 +9,11 @@ on:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'
 
+permissions:
+  contents: read
+  security-events: write # Required for uploading SARIF
+  actions: read # Required for workflow telemetry
+
 jobs:
   trivy-scan:
     name: Trivy Container Vulnerability Scan
@@ -18,10 +23,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # We'll scan the Dockerfile in sample-app once we create it
+      # Build test Docker image
       - name: Build Docker image for scanning
         run: |
-          # For now, use a simple test image
           cat > Dockerfile.test << 'DOCKERFILE'
           FROM python:3.11-slim
           WORKDIR /app
@@ -41,10 +45,11 @@ jobs:
           exit-code: '1' # Fail build on findings
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v4 # ✅ Updated to v4
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
+          category: trivy-container-scan
 
       - name: Run Trivy with JSON output
         uses: aquasecurity/trivy-action@master
@@ -53,10 +58,12 @@ jobs:
           image-ref: test-app:latest
           format: 'json'
           output: 'trivy-results.json'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
 
       - name: Upload Trivy JSON report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: trivy-report
+          name: trivy-report-${{ github.sha }}
           path: trivy-results.json
+          retention-days: 30
