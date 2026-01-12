@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.terraform/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Generated files
+*.min.js
+*.min.css
+package-lock.json
+poetry.lock
+
+# Results and reports
+results.json
+results.sarif
+*.sarif

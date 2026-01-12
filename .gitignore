@@ -18,7 +18,7 @@ env/
 .DS_Store
 Thumbs.db
 
-# Secrets (extra safety)
+# Secrets
 *.pem
 *.key
 secrets.yaml
@@ -33,3 +33,8 @@ credentials.json
 .pytest_cache/
 .coverage
 htmlcov/
+test-ci.sh
+
+# Node JS Dependency directories
+node_modules/
+jspm_packages/

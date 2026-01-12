@@ -15,6 +15,7 @@ A hardened CI/CD pipeline demonstrating:
 - ✅ **8 attack scenarios** - all successfully blocked
 
 ## 🚀 Quick Start
+
 ```bash
 # Clone the repository
 git clone https://github.com/YOUR_USERNAME/gitops-security-pipeline
@@ -27,16 +28,16 @@ cd attack-scenarios
 
 ## ⚔️ Attack Scenarios
 
-| # | Attack | Tool That Blocks It | Status |
-|---|--------|---------------------|--------|
-| 1 | Secrets in code | Gitleaks | ✅ |
-| 2 | Insecure Dockerfile | Conftest | ✅ |
-| 3 | Public S3 bucket | Checkov | ✅ |
-| 4 | Unsigned image | Cosign | ✅ |
-| 5 | Privilege escalation | OPA | ✅ |
-| 6 | SQL injection | Semgrep | ✅ |
-| 7 | Container escape | OPA | ✅ |
-| 8 | Resource bomb | OPA | ✅ |
+| #   | Attack               | Tool That Blocks It | Status |
+| --- | -------------------- | ------------------- | ------ |
+| 1   | Secrets in code      | Gitleaks            | ✅     |
+| 2   | Insecure Dockerfile  | Conftest            | ✅     |
+| 3   | Public S3 bucket     | Checkov             | ✅     |
+| 4   | Unsigned image       | Cosign              | ✅     |
+| 5   | Privilege escalation | OPA                 | ✅     |
+| 6   | SQL injection        | Semgrep             | ✅     |
+| 7   | Container escape     | OPA                 | ✅     |
+| 8   | Resource bomb        | OPA                 | ✅     |
 
 ## 📊 Architecture
 

@@ -76,4 +76,3 @@ id = "kubernetes-secret-env"
 description = "Kubernetes Secret via env var"
 regex = '''(?i)(gcp|google|k8s|kube|gke)[_-]?(secret|token|key|password)\s*[:=]\s*['"][^'"]{20,}['"]'''
 tags = ["kubernetes", "GKE", "secret"]
-
