@@ -1,0 +1,15 @@
+Expected Behavior:
+==================
+
+When running test.sh, Gitleaks should detect the following secrets:
+
+1. AWS Access Key ID
+2. AWS Secret Access Key
+3. GitHub Personal Access Token
+4. Database password in connection string
+5. Stripe API key
+6. SendGrid API key
+7. OpenAI API key
+8. Slack webhook URL
+
+Exit Code: 1 (failure to commit is success for this test)
