@@ -1,0 +1,62 @@
+name: 03 - Container Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  trivy-scan:
+    name: Trivy Container Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # We'll scan the Dockerfile in sample-app once we create it
+      - name: Build Docker image for scanning
+        run: |
+          # For now, use a simple test image
+          cat > Dockerfile.test << 'DOCKERFILE'
+          FROM python:3.11-slim
+          WORKDIR /app
+          COPY . .
+          RUN pip install --no-cache-dir requests
+          DOCKERFILE
+
+          docker build -f Dockerfile.test -t test-app:latest .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: test-app:latest
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1' # Fail build on findings
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy with JSON output
+        uses: aquasecurity/trivy-action@master
+        if: always()
+        with:
+          image-ref: test-app:latest
+          format: 'json'
+          output: 'trivy-results.json'
+
+      - name: Upload Trivy JSON report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: trivy-report
+          path: trivy-results.json

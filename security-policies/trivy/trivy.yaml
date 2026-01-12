@@ -1,0 +1,37 @@
+# Trivy configuration file
+
+# Scan configuration
+scan:
+  # Skip scanning directories
+  skip-dirs:
+    - node_modules
+    - .git
+    - .github
+
+  # Skip files
+  skip-files:
+    - '**/*.md'
+    - '**/*.txt'
+
+# Vulnerability settings
+vulnerability:
+  type:
+    - os
+    - library
+
+  # Ignore unfixed vulnerabilities
+  ignore-unfixed: false
+
+# Severity settings
+severity:
+  - CRITICAL
+  - HIGH
+  - MEDIUM
+
+# Output settings
+output:
+  format: table
+
+# Cache settings
+cache:
+  clear: false
