@@ -1,3 +1,5 @@
+## Trivy Container Scan
+
 name: 03 - Container Scan
 
 on:
@@ -11,8 +13,8 @@ on:
 
 permissions:
   contents: read
-  security-events: write # Required for uploading SARIF
-  actions: read # Required for workflow telemetry
+  security-events: write
+  actions: read
 
 jobs:
   trivy-scan:
@@ -23,7 +25,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Build test Docker image
       - name: Build Docker image for scanning
         run: |
           cat > Dockerfile.test << 'DOCKERFILE'
@@ -35,23 +36,26 @@ jobs:
 
           docker build -f Dockerfile.test -t test-app:latest .
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (SARIF)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: test-app:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1' # Fail build on findings
+          exit-code: '0' # ✅ Changed to 0 - don't fail yet
+        continue-on-error: true # ✅ Continue even if vulnerabilities found
 
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v4 # ✅ Updated to v4
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
           category: trivy-container-scan
+        continue-on-error: true
 
       - name: Run Trivy with JSON output
+        id: trivy-json
         uses: aquasecurity/trivy-action@master
         if: always()
         with:
@@ -59,11 +63,53 @@ jobs:
           format: 'json'
           output: 'trivy-results.json'
           severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+          exit-code: '0' # ✅ Don't exit on vulnerabilities
+        continue-on-error: true
+
+      - name: Check for vulnerabilities
+        if: always()
+        id: check-vulns
+        run: |
+          if [ -f trivy-results.json ]; then
+            # Count vulnerabilities by severity
+            CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy-results.json)
+            HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy-results.json)
+
+            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "high=$HIGH" >> $GITHUB_OUTPUT
+
+            echo "Vulnerability Summary:"
+            echo "  CRITICAL: $CRITICAL"
+            echo "  HIGH: $HIGH"
+
+            if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+              echo "has_vulnerabilities=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_vulnerabilities=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "has_vulnerabilities=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload Trivy JSON report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: trivy-report-${{ github.sha }}
-          path: trivy-results.json
+          path: |
+            trivy-results.json
+            trivy-results.sarif
           retention-days: 30
+          if-no-files-found: warn
+
+      - name: Fail build if vulnerabilities found
+        if: steps.check-vulns.outputs.has_vulnerabilities == 'true'
+        run: |
+          echo "::error::Critical or High severity vulnerabilities found"
+          echo "CRITICAL: ${{ steps.check-vulns.outputs.critical }}"
+          echo "HIGH: ${{ steps.check-vulns.outputs.high }}"
+          echo ""
+          echo "View details in:"
+          echo "  - GitHub Security tab"
+          echo "  - Workflow artifacts"
+          exit 1

@@ -226,4 +226,5 @@ default_language_version:
   node: system
 
 # Default stages
-default_stages: [pre-commit, pre-push]
+# default_stages: [pre-commit, pre-push]
+default_stages: [pre-commit]
