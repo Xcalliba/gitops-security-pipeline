@@ -36,15 +36,20 @@ jobs:
 
           docker build -f Dockerfile.test -t test-app:latest .
 
-      - name: Run Trivy vulnerability scanner (SARIF)
-        uses: aquasecurity/trivy-action@master
+      - name: Setup Trivy
+        uses: aquasecurity/setup-trivy@v0.2.0
         with:
-          image-ref: test-app:latest
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '0' # ✅ Changed to 0 - don't fail yet
-        continue-on-error: true # ✅ Continue even if vulnerabilities found
+          version: v0.68.2
+
+      - name: Run Trivy SARIF scan
+        run: |
+          trivy image \
+            --format sarif \
+            --output trivy-results.sarif \
+            --severity CRITICAL,HIGH \
+            --exit-code 0 \
+            --no-progress \
+            test-app:latest || true
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
