@@ -1,0 +1,19 @@
+Expected Behavior:
+==================
+
+Checkov should detect:
+1. Public ACL (CKV_AWS_20)
+2. No bucket encryption (CKV_AWS_19)
+3. No versioning (CKV_AWS_21)
+4. Public access block disabled (CKV_AWS_53, CKV_AWS_54, CKV_AWS_55, CKV_AWS_56)
+5. No access logging (CKV_AWS_18)
+6. Public bucket policy (CKV_AWS_70)
+
+tfsec should detect:
+1. aws-s3-enable-bucket-encryption
+2. aws-s3-enable-versioning
+3. aws-s3-enable-bucket-logging
+4. aws-s3-block-public-acls
+5. aws-s3-block-public-policy
+
+Exit Code: 0 (test passes when insecure Terraform is rejected)

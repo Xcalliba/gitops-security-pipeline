@@ -1,0 +1,109 @@
+# SECURE VERSION: S3 Bucket with Security Best Practices
+
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+# ✅ SECURE: Private S3 bucket
+resource "aws_s3_bucket" "data" {
+  bucket = "my-company-sensitive-data-bucket-secure"
+
+  tags = {
+    Name        = "Sensitive Data"
+    Environment = "Production"
+    Compliance  = "SOC2"
+  }
+}
+
+# ✅ SECURE: Private ACL (or no ACL - private by default)
+resource "aws_s3_bucket_acl" "data_acl" {
+  bucket = aws_s3_bucket.data.id
+  acl    = "private"
+}
+
+# ✅ SECURE: Encryption enabled
+resource "aws_s3_bucket_server_side_encryption_configuration" "data_encryption" {
+  bucket = aws_s3_bucket.data.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# ✅ SECURE: Versioning enabled
+resource "aws_s3_bucket_versioning" "data_versioning" {
+  bucket = aws_s3_bucket.data.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# ✅ SECURE: Block all public access
+resource "aws_s3_bucket_public_access_block" "data_public_access" {
+  bucket = aws_s3_bucket.data.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# ✅ SECURE: Access logging enabled
+resource "aws_s3_bucket_logging" "data_logging" {
+  bucket = aws_s3_bucket.data.id
+
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "s3-access-logs/"
+}
+
+# Logs bucket
+resource "aws_s3_bucket" "logs" {
+  bucket = "my-company-logs-bucket-secure"
+
+  tags = {
+    Name = "Access Logs"
+  }
+}
+
+resource "aws_s3_bucket_acl" "logs_acl" {
+  bucket = aws_s3_bucket.logs.id
+  acl    = "log-delivery-write"
+}
+
+# ✅ SECURE: Lifecycle policy for log retention
+resource "aws_s3_bucket_lifecycle_configuration" "logs_lifecycle" {
+  bucket = aws_s3_bucket.logs.id
+
+  rule {
+    id     = "delete-old-logs"
+    status = "Enabled"
+
+    expiration {
+      days = 90
+    }
+  }
+}
+
+output "bucket_name" {
+  value       = aws_s3_bucket.data.id
+  description = "The name of the secure S3 bucket"
+}
+
+output "bucket_arn" {
+  value       = aws_s3_bucket.data.arn
+  description = "The ARN of the secure S3 bucket"
+}
