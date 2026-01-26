@@ -1,0 +1,37 @@
+# ATTACK SCENARIO 02: Insecure Dockerfile
+# This Dockerfile violates multiple security best practices
+
+# ❌ Using 'latest' tag (unstable, non-reproducible)
+FROM ubuntu:latest
+
+# ❌ Running as root (dangerous)
+USER root
+
+# ❌ Installing packages without cleaning up
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        curl \
+        wget \
+        python3 \
+        python3-pip
+
+# ❌ Exposing unnecessary ports
+EXPOSE 22 3306 5432 6379 27017
+
+# ❌ Copying entire directory (may include secrets, .git, etc.)
+COPY . /app
+
+WORKDIR /app
+
+# ❌ Installing packages globally as root
+RUN pip3 install --no-cache-dir flask django requests
+
+# ❌ Hardcoded secrets (should be caught by other tools too)
+ENV DATABASE_PASSWORD="SuperSecretPassword123!"
+ENV API_KEY="sk-1234567890abcdefghijklmnopqrstuvwxyz"
+
+# ❌ No HEALTHCHECK
+# ❌ No non-root USER specified
+
+# Run application as root (very dangerous)
+CMD ["python3", "app.py"]

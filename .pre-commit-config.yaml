@@ -185,6 +185,7 @@ repos:
       - id: hadolint-docker
         name: Lint Dockerfiles
         description: Best practices for Dockerfiles
+        exclude: '^attack-scenarios/' # Exclude attack scenarios
 
   # ============================================
   # TERRAFORM VALIDATION (if using Terraform)

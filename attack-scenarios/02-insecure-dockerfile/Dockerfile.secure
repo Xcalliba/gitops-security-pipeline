@@ -1,0 +1,38 @@
+# SECURE VERSION: Following Docker best practices
+
+# ✅ Using specific version tag
+FROM python:3.11-slim-bookworm
+
+# ✅ Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# ✅ Install packages efficiently with cleanup
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        curl=7.* \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# ✅ Copy only what's needed
+COPY requirements.txt .
+
+# ✅ Install Python packages as root, then switch user
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ✅ Copy application files
+COPY --chown=appuser:appuser app.py .
+
+# ✅ Switch to non-root user
+USER appuser
+
+# ✅ Only expose necessary ports
+EXPOSE 8080
+
+# ✅ Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# ✅ Run application as non-root user
+CMD ["python", "app.py"]

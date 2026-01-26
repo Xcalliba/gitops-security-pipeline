@@ -1,0 +1,16 @@
+Expected Behavior:
+==================
+
+Conftest should detect and reject the following issues in Dockerfile.insecure:
+
+1. ❌ Using 'latest' tag for base image
+2. ❌ Running as root user
+3. ❌ Missing USER instruction
+4. ❌ apt-get without --no-install-recommends
+5. ❌ No apt-get clean after install
+6. ⚠️  Missing HEALTHCHECK (warning)
+7. ⚠️  Copying entire directory (warning)
+
+The secure Dockerfile should pass all critical checks.
+
+Exit Code: 0 (test passes when insecure Dockerfile is rejected)
